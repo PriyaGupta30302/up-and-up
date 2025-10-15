@@ -9,3 +9,28 @@ h1{
 h2, h3, h4, h5, h6, p, a, span, div, li, button{
     font-family: 'inter', sans-serif;
 }
+
+/* Add to globals.css */
+.page-loading {
+  visibility: hidden !important;
+  overflow: hidden !important;
+}
+
+.page-loading * {
+  visibility: hidden !important;
+}
+
+/* Only show the page loader */
+.page-loading .page-loader,
+.page-loading .page-loader * {
+  visibility: visible !important;
+}
+
+/* Initial body state - hidden until React loads */
+body {
+  visibility: hidden;
+}
+
+body.react-loaded {
+  visibility: visible;
+}

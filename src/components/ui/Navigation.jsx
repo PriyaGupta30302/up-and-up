@@ -1,4 +1,3 @@
-// components/ui/Navigation.jsx
 'use client';
 import React, { useState, useRef, useEffect } from 'react';
 import { useGSAP } from '@gsap/react';
@@ -45,7 +44,10 @@ function Navigation() {
     };
   }, []);
 
-  // GSAP animations for menu
+  // Check if it's tablet/mobile (below 1024px)
+  const isTabletOrMobile = windowWidth < 1024;
+
+  // GSAP animations for menu - UPDATED with responsive delays
   useGSAP(() => {
     if (isMenuOpen) {
       // Slide up animation
@@ -62,7 +64,7 @@ function Navigation() {
         }
       );
 
-      // Stagger animation for nav items
+      // Responsive stagger animation for nav items
       gsap.fromTo('.nav-item',
         {
           y: 50,
@@ -72,8 +74,8 @@ function Navigation() {
           y: 0,
           opacity: 1,
           duration: 0.8,
-          stagger: 0.1,
-          delay: 0.2,
+          stagger: isTabletOrMobile ? 0.1 : 0.05, // Faster stagger on desktop
+          delay: isTabletOrMobile ? 0.2 : 0.1,    // Shorter delay on desktop
           ease: 'power3.out'
         }
       );
@@ -88,7 +90,7 @@ function Navigation() {
           ease: 'power3.in'
         }, '-=0.2');
     }
-  }, [isMenuOpen]);
+  }, [isMenuOpen, isTabletOrMobile]);
 
   // Smooth border animation with extended width
   useEffect(() => {
@@ -135,31 +137,63 @@ function Navigation() {
 
   // Full navigation items for the menu
   const navItems = [
-    { name: 'About Us', image: '/assets/navbar/about-hover.webp' },
-    { name: 'Our Solutions', image: '/assets/navbar/solution-hover.webp' },
-    { name: 'Our Work', image: '/assets/navbar/work-hover.webp' },
-    { name: 'Thought', image: '/assets/navbar/thought-hover.webp' },
-    { name: 'Join Us', image: '/assets/navbar/join-hover.webp' },
-    { name: 'Contact Us', image: '/assets/navbar/contact-hover.webp' }
-  ];
-
-  // Shortened navigation items for the top bar
-  const shortNavItems = [
-    { name: 'About', fullName: 'About Us' },
-    { name: 'Solutions', fullName: 'Our Solutions' },
-    { name: 'Work', fullName: 'Our Work' },
-    { name: 'Thought', fullName: 'Thought' }
+    { name: 'About Us', image: '/assets/navbar/about-hover.webp', shortName: 'About' },
+    { name: 'Our Solutions', image: '/assets/navbar/solution-hover.webp', shortName: 'Solutions' },
+    { name: 'Our Work', image: '/assets/navbar/work-hover.webp', shortName: 'Work' },
+    { name: 'Thought', image: '/assets/navbar/thought-hover.webp', shortName: 'Thought' },
+    { name: 'Join Us', image: '/assets/navbar/join-hover.webp', shortName: 'Join Us' },
+    { name: 'Contact Us', image: '/assets/navbar/contact-hover.webp', shortName: 'Contact' }
   ];
 
   // Default image when no item is hovered
-  const defaultImage = '/assets/hero-banner.webp';
+  const defaultImage = '/assets/navbar/contact-hover.webp';
   const currentImage = hoveredItem ? navItems.find(item => item.name === hoveredItem)?.image : defaultImage;
-
-  // Check if it's tablet/mobile (below 1440px)
-  const isTabletOrMobile = windowWidth < 1024;
 
   return (
     <>
+      {/* Add the line animation styles */}
+      <style jsx>{`
+        .btn-line-effect {
+          position: relative;
+          overflow: hidden;
+          border: none;
+          transition: 0.3s;
+        }
+
+        .btn-line-effect::before,
+        .btn-line-effect::after {
+          position: absolute;
+          content: "";
+          left: 0;
+          width: 100%;
+          height: 1px;
+          background: #374151;
+          opacity: 0;
+          transform: scaleX(0);
+          transition: 0.4s ease-in-out;
+        }
+
+        .btn-line-effect::before {
+          top: 0;
+        }
+
+        .btn-line-effect::after {
+          bottom: 0;
+        }
+
+        .btn-line-effect:hover {
+          letter-spacing: 2px;
+          color: #374151;
+          background: transparent;
+        }
+
+        .btn-line-effect:hover::before,
+        .btn-line-effect:hover::after {
+          opacity: 1;
+          transform: scaleX(1.2);
+        }
+      `}</style>
+
       {/* Main Navigation Bar - Two Different States */}
       <nav className={`fixed z-50 transition-all duration-500 ease-in-out ${
         isScrolledNav
@@ -167,7 +201,7 @@ function Navigation() {
           : (isTabletOrMobile ? 'bottom-4 left-4 right-4' : 'bottom-8 left-1/2 transform -translate-x-1/2') // Default state
       }`}>
         <div className={`bg-white/90 backdrop-blur-md shadow-lg border border-gray-200 transition-all duration-500 rounded-[8px] px-6 py-3 ${
-          isTabletOrMobile ? 'w-full' : (isScrolledNav ? 'w-full' : 'w-auto')
+          isTabletOrMobile ? 'w-full' : (isScrolledNav ? 'w-full' : 'w-[450px]')
         }`}>
           <div className="flex items-center justify-between">
 
@@ -190,28 +224,16 @@ function Navigation() {
 
             {/* Desktop Navigation Items - Only show on desktop */}
             {!isTabletOrMobile && (
-              <div className="hidden lg:flex items-center space-x-4">
-                {isScrolledNav ? (
-                  // Scrolled state - show short nav items
-                  shortNavItems.map((item, index) => (
-                    <button
-                      key={index}
-                      className="text-gray-800 hover:text-black transition-colors duration-300 text-sm font-medium"
-                    >
-                      {item.name}
-                    </button>
-                  ))
-                ) : (
-                  // Default state - show original 4 items
-                  navItems.slice(0, 4).map((item, index) => (
-                    <button
-                      key={index}
-                      className="text-gray-800 hover:text-black transition-colors duration-300 text-sm font-medium"
-                    >
-                      {item.name}
-                    </button>
-                  ))
-                )}
+              <div className="hidden lg:flex items-center space-x-6">
+                {/* Show short names for first 4 items */}
+                {navItems.slice(0, 4).map((item, index) => (
+                  <button
+                    key={index}
+                    className="text-gray-800 hover:text-black transition-colors duration-300 text-sm font-medium"
+                  >
+                    {item.shortName}
+                  </button>
+                ))}
               </div>
             )}
 
@@ -238,24 +260,24 @@ function Navigation() {
         <div className={`w-full h-full flex flex-col ${isTabletOrMobile ? 'flex' : 'lg:hidden'}`}>
           {/* Mobile Navigation - Full Height */}
           <div className="bg-[#f5f5f5] flex-1 flex flex-col justify-between py-8">
-            {/* Top Row: LinkedIn and Newsletter */}
+            {/* Top Row: LinkedIn and Newsletter with Line Animation */}
             <div className="flex items-center px-4 mb-8 gap-2">
-              <div className="text-sm w-full font-semibold bg-white px-4 py-2 text-gray-800 cursor-pointer hover:text-black transition-colors text-center rounded-[4px]">
+              <div className="btn-line-effect text-sm w-full font-semibold bg-white px-4 py-2 text-gray-800 cursor-pointer transition-colors text-center rounded-[4px]">
                 LINKEDIN
               </div>
-              <div className="text-sm w-full font-semibold bg-white px-4 py-2 text-gray-800 cursor-pointer hover:text-black transition-colors text-center rounded-[4px]">
+              <div className="btn-line-effect text-sm w-full font-semibold bg-white px-4 py-2 text-gray-800 cursor-pointer transition-colors text-center rounded-[4px]">
                 NEWSLETTER
               </div>
             </div>
 
-            {/* Mobile Navigation Items - Centered */}
+            {/* Mobile Navigation Items - Centered - Show FULL names */}
             <div className="text-center space-y-2 flex flex-col px-8 -mt-20">
               {navItems.map((item, index) => (
                 <div
                   key={index}
                   className="nav-item relative inline-block"
                 >
-                  <h1 className="text-[32px] lg:text-[35px] font-medium text-gray-900 cursor-pointer transition-all duration-300 py-2">
+                  <h1 className="text-[32px] lg:text-[30px] xl:text-[35px] font-medium text-gray-900 cursor-pointer transition-all duration-300 py-2">
                     {item.name}
                   </h1>
                 </div>
@@ -286,12 +308,12 @@ function Navigation() {
           <div className="bg-[#f5f5f5] flex-1 flex flex-col">
             {/* LinkedIn and Newsletter + Navigation Items */}
             <div className="flex flex-col justify-center px-8 py-0 mt-5">
-              {/* Top Row: LinkedIn and Newsletter - No Hover Animation */}
+              {/* Top Row: LinkedIn and Newsletter with Line Animation */}
               <div className="flex justify-between items-center">
-                <div className="text-sm font-semibold bg-white px-4 py-2 text-gray-800 cursor-pointer hover:text-black transition-colors">
+                <div className="btn-line-effect text-sm font-semibold bg-white px-4 py-2 text-gray-800 cursor-pointer transition-colors">
                   LINKEDIN
                 </div>
-                <div className="text-sm font-semibold bg-white px-4 py-2 text-gray-800 cursor-pointer hover:text-black transition-colors">
+                <div className="btn-line-effect text-sm font-semibold bg-white px-4 py-2 text-gray-800 cursor-pointer transition-colors">
                   NEWSLETTER
                 </div>
               </div>
@@ -310,7 +332,7 @@ function Navigation() {
                   }}
                 />
 
-                {/* Navigation Items with Opacity Control */}
+                {/* Navigation Items with Opacity Control - Show FULL names in menu */}
                 {navItems.map((item, index) => (
                   <div
                     key={index}
@@ -319,7 +341,7 @@ function Navigation() {
                     onMouseEnter={() => handleMouseEnter(item, index)}
                     onMouseLeave={handleMouseLeave}
                   >
-                    <h1 className={`text-[35px] font-medium text-gray-900 cursor-pointer transition-all duration-300 px-8 py-2 relative z-20 ${
+                    <h1 className={`lg:text-[30px] xl:text-[35px] font-medium text-gray-900 cursor-pointer transition-all duration-300 px-8 py-2 relative z-20 ${
                       hoveredIndex >= 0
                         ? (hoveredIndex === index ? 'opacity-100' : 'opacity-40')
                         : 'opacity-100'
@@ -333,7 +355,7 @@ function Navigation() {
           </div>
 
           {/* Bottom Section - Dynamic Background Image (Desktop Only) */}
-          <div className="relative h-[400px] w-full overflow-hidden">
+          <div className="relative lg:h-[300px] xl:h-[400px] w-full overflow-hidden">
             <Image
               src={currentImage || defaultImage}
               alt="Background design"

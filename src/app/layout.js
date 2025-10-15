@@ -4,6 +4,8 @@ import { useEffect } from 'react';
 import { initSmoothScroll } from '../components/utils/smooth-scroll';
 import "./globals.css";
 import Navigation from '@/components/ui/Navigation';
+import PageLoader from '@/components/ui/PageLoader';
+import Footer from '@/components/ui/Footer';
 
 export default function RootLayout({ children }) {
   useEffect(() => {
@@ -25,7 +27,9 @@ export default function RootLayout({ children }) {
       </head>
       <body className="overflow-x-hidden">
         {children}
+        <PageLoader/>
         <Navigation/>
+        <Footer/>
       </body>
     </html>
   );
