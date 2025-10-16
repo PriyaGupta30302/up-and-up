@@ -4,69 +4,87 @@ import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Image from 'next/image'
 
-// Register ScrollTrigger plugin
 gsap.registerPlugin(ScrollTrigger)
 
 function Hero() {
   const containerRef = useRef(null)
-  const thirdTitleRef = useRef(null)
+  const scrollContainerRef = useRef(null)
 
   useEffect(() => {
-    const thirdTitle = thirdTitleRef.current
+    const scrollContainer = scrollContainerRef.current
+    if (!scrollContainer) return
 
-    // Create animation for the third title transformation
-    const tl = gsap.timeline({
-      scrollTrigger: {
-        trigger: containerRef.current,
-        start: "top top",
-        end: "bottom top",
-        scrub: 1, // Smooth scrolling animation
-        pin: false,
-        onUpdate: (self) => {
-          // Calculate progress (0 to 1)
-          const progress = self.progress
+    // CRITICAL: Responsive logic based on screen size
+    const getResponsiveValues = () => {
+      const screenWidth = window.innerWidth
 
-          // Transform "EVERYTHING" to "IMPACT" and then "GROWTH"
-          if (progress < 0.5) {
-            // First half: EVERYTHING -> IMPACT
-            const chars = "EVERYTHING".split('')
-            const targetChars = "IMPACT    ".split('') // Padded to match length
-
-            let transformedText = chars.map((char, index) => {
-              if (index < targetChars.length && targetChars[index] !== ' ') {
-                // Interpolate between original and target character
-                const lerpProgress = progress * 2 // 0 to 1 for first half
-                return lerpProgress > 0.5 ? targetChars[index] : char
-              }
-              return progress > 0.3 ? '' : char
-            }).join('')
-
-            if (progress > 0.3) {
-              transformedText = "IMPACT"
-            }
-
-            thirdTitle.textContent = transformedText
-          } else {
-            // Second half: IMPACT -> GROWTH
-            const lerpProgress = (progress - 0.5) * 2 // 0 to 1 for second half
-            thirdTitle.textContent = lerpProgress > 0.5 ? "GROWTH" : "IMPACT"
-          }
+      if (screenWidth >= 1024) {
+        // Desktop and large tablets (1024px and above)
+        return {
+          MAX_TRANSLATE: -(4 - 1) * 25, // -75%
+          END_VALUE: "+=600"
         }
+      } else {
+        // Tablets and mobile (below 1024px)
+        return {
+          MAX_TRANSLATE: -(4 - 1) * 30, // -90%
+          END_VALUE: "+=400"
+        }
+      }
+    }
+
+    const { MAX_TRANSLATE, END_VALUE } = getResponsiveValues()
+
+    ScrollTrigger.create({
+      trigger: containerRef.current,
+      start: "top top",
+      end: END_VALUE, // Responsive end value
+      scrub: 1,
+      onUpdate: (self) => {
+        const progress = self.progress // 0 to 1
+
+        // Calculate translateY with strict boundaries
+        let translateY = progress * MAX_TRANSLATE // Responsive translate value
+
+        // CRITICAL: Clamp to prevent going beyond last word
+        translateY = Math.max(MAX_TRANSLATE, Math.min(0, translateY))
+
+        // Apply transform
+        gsap.set(scrollContainer, {
+          y: `${translateY}%`,
+          ease: "none"
+        })
+
+        // DEBUG: Log values to see what's happening
+        console.log(`Screen: ${window.innerWidth}px, Progress: ${progress.toFixed(2)}, TranslateY: ${translateY}%`)
+      },
+      // CRITICAL: Force stop when animation completes
+      onComplete: () => {
+        gsap.set(scrollContainer, { y: `${MAX_TRANSLATE}%` })
+        console.log("Animation stopped at:", MAX_TRANSLATE + "%")
       }
     })
 
+    // Handle window resize to refresh ScrollTrigger with new values
+    const handleResize = () => {
+      ScrollTrigger.refresh()
+    }
+
+    window.addEventListener('resize', handleResize)
+
     return () => {
-      tl.kill()
+      ScrollTrigger.getAll().forEach(trigger => trigger.kill())
+      window.removeEventListener('resize', handleResize)
     }
   }, [])
 
   return (
     <div
       ref={containerRef}
-      className="w-full py-10 bg-gray-50 flex flex-col items-center justify-center relative"
+      className="w-full h-[350px] md:h-[500px] lg:h-[700px] bg-gray-50 flex flex-col items-center justify-center relative"
     >
-      {/* Logo at top */}
-      <div className="absolute top-8 left-1/2 transform -translate-x-1/2">
+      {/* Logo */}
+      <div className="absolute top-8 left-1/2 transform -translate-x-1/2 z-10">
         <Image
           src="/assets/logo.webp"
           alt="up&up logo"
@@ -76,35 +94,57 @@ function Hero() {
         />
       </div>
 
-      {/* Main content container */}
-      <div className="text-center space-y-4 px-4 pt-36">
-        {/* First title (h2) */}
+      <div className="text-center px-4 pt-[200px] md:pt-[180px] lg:pt-[220px] w-full">
+        {/* Static titles */}
         <div>
-          <h2 className="tracking-wide text-6xl md:text-8xl lg:text-[144px] font-medium text-[#343434] leading-none">
+          <h2 className="tracking-wide text-[45px] md:text-[100px] lg:text-[144px] font-medium text-[#343434] leading-none">
             CREATIVITY
           </h2>
-          <h2 className="tracking-wide text-6xl md:text-8xl lg:text-[144px] font-medium text-[#343434] leading-none -mt-5">
+          <h2 className="tracking-wide text-[45px] md:text-[100px] lg:text-[144px] font-medium text-[#343434] leading-none md:-mt-3">
             ELEVATES
           </h2>
         </div>
 
-        {/* Third title (h1) - This will transform on scroll */}
-        <div className='-mt-8'>
-          <h1
-            ref={thirdTitleRef}
-            className="text-6xl md:text-8xl lg:text-9xl font-medium tracking-wide text-[#343434] leading-none"
-          >
-            EVERYTHING
-          </h1>
+        {/* Controlled third block */}
+        <div className="">
+          {/* CRITICAL: Mask height = exactly one word height */}
+          <div className="overflow-hidden h-[50px] md:h-[105px] lg:h-[120px] relative">
+            {/* CRITICAL: Container with exactly 4 word sections - Responsive height */}
+            <div
+              ref={scrollContainerRef}
+              className="absolute top-0 left-1/2 transform -translate-x-1/2 w-full h-[200px] md:h-[420px] lg:h-[480px]"
+            >
+              {/* Word 1: EVERYTHING */}
+              <div className="h-[50px] md:h-[105px] lg:h-[120px] flex items-center justify-center">
+                <h1 className="text-[45px] md:text-[100px] lg:text-9xl font-medium tracking-wide text-[#343434] leading-none -mt-3">
+                  EVERYTHING
+                </h1>
+              </div>
+
+              {/* Word 2: IMPACT */}
+              <div className="h-[50px] md:h-[105px] lg:h-[120px] flex items-center justify-center">
+                <h1 className="text-[45px] md:text-[100px] lg:text-9xl font-medium tracking-wide text-[#343434] leading-none whitespace-nowrap">
+                  IMPACT
+                </h1>
+              </div>
+
+              {/* Word 3: GROWTH */}
+              <div className="h-[50px] md:h-[105px] lg:h-[120px] flex items-center justify-center">
+                <h1 className="text-[45px] md:text-[100px] lg:text-9xl font-medium tracking-wide text-[#343434] leading-none whitespace-nowrap">
+                  GROWTH
+                </h1>
+              </div>
+
+              {/* Word 4: RELEVANT - FINAL STOP */}
+              <div className="h-[50px] md:h-[105px] lg:h-[120px] flex items-center justify-center">
+                <h1 className="text-[45px] md:text-[100px] lg:text-9xl font-medium tracking-wide text-[#343434] leading-none whitespace-nowrap">
+                  RELEVANT
+                </h1>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-
-      {/* Scroll indicator */}
-      {/* <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2">
-        <div className="w-6 h-10 border-2 border-gray-400 rounded-full flex justify-center">
-          <div className="w-1 h-3 bg-gray-400 rounded-full mt-2 animate-bounce"></div>
-        </div>
-      </div> */}
     </div>
   )
 }

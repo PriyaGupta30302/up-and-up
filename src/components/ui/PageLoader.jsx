@@ -123,12 +123,12 @@ function PageLoader() {
       <div className="loader-content">
         <div ref={logoRef} className="logo-container">
           <Image
-            src="/assets/navbar/loader.webp"
+            src="/assets/navbar/loader-svg.svg"
             alt="up&up group"
             width={500}
             height={120}
             priority
-            className="logo-image"
+            className="logo-image w-[300px] md:w-[350px] lg:w-[400px] object-contain"
           />
         </div>
 

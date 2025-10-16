@@ -11,13 +11,13 @@ function Navigation() {
   const [isCloseHovered, setIsCloseHovered] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [isScrolledNav, setIsScrolledNav] = useState(false);
+  const [isNavVisible, setIsNavVisible] = useState(true);
   const [windowWidth, setWindowWidth] = useState(0);
   const menuRef = useRef();
   const navItemsRef = useRef([]);
   const borderRef = useRef();
   const closeButtonRef = useRef();
 
-  // Window resize and scroll detection effect
   useEffect(() => {
     const handleResize = () => {
       setWindowWidth(window.innerWidth);
@@ -28,11 +28,19 @@ function Navigation() {
       const docHeight = document.documentElement.scrollHeight - window.innerHeight;
       const scrollPercent = (scrollTop / docHeight) * 100;
 
-      setScrollProgress(scrollPercent);
-      setIsScrolledNav(scrollPercent >= 30);
+      // Set scrolled state when user scrolls, for content switching NOT position changing
+      setIsScrolledNav(scrollPercent >= 5);
+
+      // Check if footer is visible
+      const footer = document.querySelector('footer');
+      if (footer) {
+        const footerRect = footer.getBoundingClientRect();
+        const windowHeight = window.innerHeight;
+        const isFooterVisible = footerRect.top < (windowHeight - 100);
+        setIsNavVisible(!isFooterVisible);
+      }
     };
 
-    // Set initial window width
     setWindowWidth(window.innerWidth);
 
     window.addEventListener('scroll', handleScroll);
@@ -44,13 +52,10 @@ function Navigation() {
     };
   }, []);
 
-  // Check if it's tablet/mobile (below 1024px)
   const isTabletOrMobile = windowWidth < 1024;
 
-  // GSAP animations for menu - UPDATED with responsive delays
   useGSAP(() => {
     if (isMenuOpen) {
-      // Slide up animation
       gsap.fromTo(menuRef.current,
         {
           y: '100%',
@@ -64,7 +69,6 @@ function Navigation() {
         }
       );
 
-      // Responsive stagger animation for nav items
       gsap.fromTo('.nav-item',
         {
           y: 50,
@@ -74,15 +78,13 @@ function Navigation() {
           y: 0,
           opacity: 1,
           duration: 0.8,
-          stagger: isTabletOrMobile ? 0.1 : 0.05, // Faster stagger on desktop
-          delay: isTabletOrMobile ? 0.2 : 0.1,    // Shorter delay on desktop
+          stagger: isTabletOrMobile ? 0.1 : 0.05,
+          delay: isTabletOrMobile ? 0.2 : 0.1,
           ease: 'power3.out'
         }
       );
     } else {
-      // Enhanced closing animation - Fast and smooth
       const closeTl = gsap.timeline();
-
       closeTl
         .to(menuRef.current, {
           y: '-100%',
@@ -92,7 +94,6 @@ function Navigation() {
     }
   }, [isMenuOpen, isTabletOrMobile]);
 
-  // Smooth border animation with extended width
   useEffect(() => {
     if (hoveredIndex >= 0 && navItemsRef.current[hoveredIndex] && borderRef.current) {
       const targetElement = navItemsRef.current[hoveredIndex];
@@ -135,7 +136,6 @@ function Navigation() {
     setHoveredIndex(-1);
   };
 
-  // Full navigation items for the menu
   const navItems = [
     { name: 'About Us', image: '/assets/navbar/about-hover.webp', shortName: 'About' },
     { name: 'Our Solutions', image: '/assets/navbar/solution-hover.webp', shortName: 'Solutions' },
@@ -145,13 +145,11 @@ function Navigation() {
     { name: 'Contact Us', image: '/assets/navbar/contact-hover.webp', shortName: 'Contact' }
   ];
 
-  // Default image when no item is hovered
   const defaultImage = '/assets/navbar/contact-hover.webp';
   const currentImage = hoveredItem ? navItems.find(item => item.name === hoveredItem)?.image : defaultImage;
 
   return (
     <>
-      {/* Add the line animation styles */}
       <style jsx>{`
         .btn-line-effect {
           position: relative;
@@ -159,7 +157,6 @@ function Navigation() {
           border: none;
           transition: 0.3s;
         }
-
         .btn-line-effect::before,
         .btn-line-effect::after {
           position: absolute;
@@ -172,21 +169,17 @@ function Navigation() {
           transform: scaleX(0);
           transition: 0.4s ease-in-out;
         }
-
         .btn-line-effect::before {
           top: 0;
         }
-
         .btn-line-effect::after {
           bottom: 0;
         }
-
         .btn-line-effect:hover {
           letter-spacing: 2px;
           color: #374151;
           background: transparent;
         }
-
         .btn-line-effect:hover::before,
         .btn-line-effect:hover::after {
           opacity: 1;
@@ -194,53 +187,60 @@ function Navigation() {
         }
       `}</style>
 
-      {/* Main Navigation Bar - Two Different States */}
-      <nav className={`fixed z-50 transition-all duration-500 ease-in-out ${
-        isScrolledNav
-          ? (isTabletOrMobile ? 'top-4 left-4 right-4' : 'top-8 left-8 right-8') // Scrolled state
-          : (isTabletOrMobile ? 'bottom-4 left-4 right-4' : 'bottom-8 left-1/2 transform -translate-x-1/2') // Default state
+      {/* Main Navigation Bar - ALWAYS AT BOTTOM */}
+      <nav className={`fixed bottom-8 z-50 transition-all duration-700 ease-in-out ${
+        !isNavVisible ? 'opacity-0 pointer-events-none translate-y-full' : 'opacity-100 translate-y-0'
+      } ${
+        isTabletOrMobile
+          ? 'left-4 right-4'
+          : 'left-1/2 transform -translate-x-1/2'
       }`}>
         <div className={`bg-white/90 backdrop-blur-md shadow-lg border border-gray-200 transition-all duration-500 rounded-[8px] px-6 py-3 ${
-          isTabletOrMobile ? 'w-full' : (isScrolledNav ? 'w-full' : 'w-[450px]')
+          isTabletOrMobile ? 'w-full' : (isScrolledNav ? 'w-[400px]' : 'w-auto min-w-[500px]')
         }`}>
           <div className="flex items-center justify-between">
-
-            {/* Left Side Content */}
             <div className="flex items-center">
-              {isTabletOrMobile ? (
-                // Tablet/Mobile: Show "Menu" text
-                <div className="text-lg font-medium text-gray-800">
-                  Menu
-                </div>
+              {isScrolledNav ? (
+                // When scrolled: Show logo
+                <div className={`flex items-center transition-all duration-300 ease-in-out ${
+                isScrolledNav ? 'opacity-100' : 'opacity-0 pointer-events-none'
+              }`}>
+                <Image
+                  src="/assets/navbar/navbar-logo.webp"
+                  alt="up&up Logo"
+                  width={25}
+                  height={25}
+                  className="object-contain"
+                  priority
+                />
+              </div>
               ) : (
-                // Desktop: Show logo only when scrolled
-                isScrolledNav && (
-                  <div className="text-xl font-bold text-gray-800">
-                    up&up
-                  </div>
-                )
+                // When at top: Show navigation items or "Menu" text
+                <>
+                  {isTabletOrMobile ? (
+                    <div className="text-lg font-medium text-gray-800">
+                      Menu
+                    </div>
+                  ) : (
+                    // Desktop: Show navigation items
+                    <div className="flex items-center space-x-6">
+                      {navItems.slice(0, 4).map((item, index) => (
+                        <button
+                          key={index}
+                          className="text-gray-800 hover:text-black transition-colors duration-300 text-sm font-medium whitespace-nowrap"
+                        >
+                          {item.shortName}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </>
               )}
             </div>
-
-            {/* Desktop Navigation Items - Only show on desktop */}
-            {!isTabletOrMobile && (
-              <div className="hidden lg:flex items-center space-x-6">
-                {/* Show short names for first 4 items */}
-                {navItems.slice(0, 4).map((item, index) => (
-                  <button
-                    key={index}
-                    className="text-gray-800 hover:text-black transition-colors duration-300 text-sm font-medium"
-                  >
-                    {item.shortName}
-                  </button>
-                ))}
-              </div>
-            )}
-
-            {/* Hamburger Menu Button */}
+            {/* Hamburger Menu Button - Always visible */}
             <button
               onClick={toggleMenu}
-              className="flex flex-col items-center justify-center w-8 h-8 space-y-1 group cursor-pointer lg:mx-6"
+              className={`flex flex-col items-center justify-center w-8 h-8 space-y-1 group cursor-pointer ${isScrolledNav || isTabletOrMobile ? '' : 'ml-6'}`}
             >
               <span className={`block w-10 h-0.5 bg-gray-600 transition-all duration-300 ${isMenuOpen ? 'rotate-45 translate-y-1.5' : ''}`}></span>
               <span className={`block w-10 h-0.5 bg-gray-600 transition-all duration-300 ${isMenuOpen ? 'opacity-0' : ''}`}></span>
@@ -269,21 +269,16 @@ function Navigation() {
                 NEWSLETTER
               </div>
             </div>
-
             {/* Mobile Navigation Items - Centered - Show FULL names */}
             <div className="text-center space-y-2 flex flex-col px-8 -mt-20">
               {navItems.map((item, index) => (
-                <div
-                  key={index}
-                  className="nav-item relative inline-block"
-                >
+                <div key={index} className="nav-item relative inline-block">
                   <h1 className="text-[32px] lg:text-[30px] xl:text-[35px] font-medium text-gray-900 cursor-pointer transition-all duration-300 py-2">
                     {item.name}
                   </h1>
                 </div>
               ))}
             </div>
-
             {/* Mobile Close Button - Bottom */}
             <div
               className="mt-8 mx-8 bg-white rounded-[8px] py-0 flex items-center justify-center cursor-pointer"
@@ -292,23 +287,17 @@ function Navigation() {
               onMouseLeave={() => setIsCloseHovered(false)}
             >
               <div
-                className={`inline-flex items-center justify-center w-12 h-12 text-gray-500 transition-all duration-500 text-2xl font-light ${
-                  isCloseHovered ? 'rotate-180 text-gray-700' : 'rotate-0'
-                }`}
+                className={`inline-flex items-center justify-center w-12 h-12 text-gray-500 transition-all duration-500 text-2xl font-light ${isCloseHovered ? 'rotate-180 text-gray-700' : 'rotate-0'}`}
               >
                 ×
               </div>
             </div>
           </div>
         </div>
-
         {/* Desktop Layout - Original Design with Image (1440px+) */}
         <div className={`w-full h-full ${isTabletOrMobile ? 'hidden' : 'hidden lg:flex'} flex-col`}>
-          {/* Top Section - White Background with Navigation */}
           <div className="bg-[#f5f5f5] flex-1 flex flex-col">
-            {/* LinkedIn and Newsletter + Navigation Items */}
             <div className="flex flex-col justify-center px-8 py-0 mt-5">
-              {/* Top Row: LinkedIn and Newsletter with Line Animation */}
               <div className="flex justify-between items-center">
                 <div className="btn-line-effect text-sm font-semibold bg-white px-4 py-2 text-gray-800 cursor-pointer transition-colors">
                   LINKEDIN
@@ -317,10 +306,7 @@ function Navigation() {
                   NEWSLETTER
                 </div>
               </div>
-
-              {/* Navigation Items Container - With Animated Border */}
               <div className="text-center space-y-0 flex flex-col max-w-4xl mx-auto -mt-5 relative">
-                {/* Animated Border Element - Extended */}
                 <div
                   ref={borderRef}
                   className="absolute border-t-2 border-b-2 border-gray-300 rounded-xl pointer-events-none z-10"
@@ -331,8 +317,6 @@ function Navigation() {
                     height: 0
                   }}
                 />
-
-                {/* Navigation Items with Opacity Control - Show FULL names in menu */}
                 {navItems.map((item, index) => (
                   <div
                     key={index}
@@ -353,8 +337,6 @@ function Navigation() {
               </div>
             </div>
           </div>
-
-          {/* Bottom Section - Dynamic Background Image (Desktop Only) */}
           <div className="relative lg:h-[300px] xl:h-[400px] w-full overflow-hidden">
             <Image
               src={currentImage || defaultImage}
@@ -364,8 +346,6 @@ function Navigation() {
               priority
               key={currentImage}
             />
-
-            {/* Desktop Close Button */}
             <div
               className="absolute bottom-8 left-1/2 transform -translate-x-1/2 bg-white w-[400px] rounded-[8px] py-0 flex items-center justify-center z-10 cursor-pointer"
               onClick={closeMenu}
@@ -374,9 +354,7 @@ function Navigation() {
             >
               <div
                 ref={closeButtonRef}
-                className={`inline-flex items-center justify-center w-12 h-12 text-gray-500 transition-all duration-500 text-2xl font-light ${
-                  isCloseHovered ? 'rotate-180 text-gray-700' : 'rotate-0'
-                }`}
+                className={`inline-flex items-center justify-center w-12 h-12 text-gray-500 transition-all duration-500 text-2xl font-light ${isCloseHovered ? 'rotate-180 text-gray-700' : 'rotate-0'}`}
               >
                 ×
               </div>
@@ -387,5 +365,4 @@ function Navigation() {
     </>
   );
 }
-
 export default Navigation;
