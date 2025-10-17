@@ -72,7 +72,7 @@ function Video() {
                  lg:h-[calc(100vh+500px)]          /* Desktop: Full height + extra space */
                  lg:min-h-[900px]"                 /* Desktop: Minimum 900px */
     >
-      <div className="absolute inset-0 bg-white z-0"></div>
+      <div className="absolute inset-0 bg-[#f5f5f5] z-0"></div>
 
       {/* Video container - RESPONSIVE HEIGHT */}
       <div className="relative w-full z-10
