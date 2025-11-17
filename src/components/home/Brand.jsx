@@ -5,7 +5,6 @@ import { ScrollTrigger } from 'gsap/dist/ScrollTrigger'
 import Team from '@/components/home/Team'
 import GalleryGrid from './GalleryGrid'
 
-
 gsap.registerPlugin(ScrollTrigger)
 
 function Brand() {
@@ -70,6 +69,7 @@ function Brand() {
 
     ScrollTrigger.matchMedia({
       "(min-width: 1024px)": function() {
+        // Desktop scroll animation, hover active
         ScrollTrigger.create({
           trigger: container,
           start: "top top",
@@ -87,6 +87,7 @@ function Brand() {
         })
       },
       "(max-width: 1023px)": function() {
+        // Mobile/Tablet: logo switches only when logo center closely matches brand row center
         ScrollTrigger.create({
           trigger: "#video-section",
           start: "top top",
@@ -94,21 +95,42 @@ function Brand() {
           end: "top top",
           scrub: true,
           onUpdate: (self) => {
+            if (!container || !mobileLogo) return;
+            const brandElements = Array.from(brandList.children);
+            const viewportHeight = window.innerHeight;
+            const logoRectTop = viewportHeight * 0.35;      // logo box top
+            const logoBoxHeight = 140;                      // must match your logo box style
+            const logoCenterY = logoRectTop + logoBoxHeight/2;
+            let matchedIndex = -1;
+            brandElements.forEach((el, i) => {
+              const rect = el.getBoundingClientRect();
+              const brandCenter = rect.top + rect.height / 2;
+              if (Math.abs(logoCenterY - brandCenter) < rect.height / 2) {
+                matchedIndex = i;
+              }
+            });
+            if (matchedIndex !== -1) {
+              setHoveredBrand(brands[matchedIndex]);
+            } else {
+              setHoveredBrand(null);
+            }
+            // vertical scroll animation for mobile logo (unchanged)
             const videoSection = document.getElementById('video-section')
-            if (!videoSection || !mobileLogo) return
+            if (!videoSection) return
             const videoRect = videoSection.getBoundingClientRect()
             const brandRect = container.getBoundingClientRect()
-            // Scroll progress maps between video and brand section
             const totalDistance = brandRect.top - videoRect.top
             const translateY = self.progress * totalDistance
-            gsap.set(mobileLogo, { y: translateY, force3D: true })
+            gsap.to(mobileLogo, { y: translateY, force3D: true, ease: "power2.out" })
           }
         })
       }
     })
   }, [])
 
+  // Desktop hover handlers (device check INSIDE handler)
   const handleBrandHover = (brand, index) => {
+    if (typeof window === 'undefined' || window.innerWidth < 1024) return
     setHoveredBrand(brand)
     gsap.to(logoRef.current, {
       scale: 0.9,
@@ -141,6 +163,7 @@ function Brand() {
   }
 
   const handleBrandLeave = () => {
+    if (typeof window === 'undefined' || window.innerWidth < 1024) return
     setHoveredBrand(null)
     const brandElements = brandListRef.current.children
     Array.from(brandElements).forEach((element) => {
@@ -155,11 +178,10 @@ function Brand() {
 
   return (
     <>
-      
       {/* Mobile/Tablet logo - absolutely centered on video, scrolls down */}
       <div
         ref={mobileLogoRef}
-        className="fixed left-1/2 top-[65vh] z-30 transform -translate-x-1/2 lg:hidden block transition-all"
+        className="fixed left-1/2 top-[35vh] z-30 transform -translate-x-1/2 lg:hidden block transition-all"
         style={{
           width: '140px',
           height: '140px',
@@ -198,8 +220,8 @@ function Brand() {
           </div>
         </div>
         {/* Brand List */}
-        <div className="w-full pt-[150px] lg:pt-[350px] pb-[40vh]">
-          <div ref={brandListRef} className="w-full mx-auto px-0 xl:pt-20">
+        <div className="w-full pt-[150px] lg:pt-[350px] pb-[50vh]">
+          <div ref={brandListRef} className="w-full mx-auto px-0 xl:pt-20 flex flex-col">
             {brands.map((brand, index) => (
               <div
                 key={brand.name}
