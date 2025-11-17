@@ -65,14 +65,14 @@ function Video() {
   return (
     <div
       ref={containerRef}
-      className="relative w-full overflow-hidden
+      className="relative w-full overflow-hidden mb-[280px] lg:mb-0
                  h-[70vh]                          /* Mobile: 70vh height */
                  sm:h-[70vh]                       /* Small screens: 70vh */
                  md:h-[75vh]                       /* Medium screens: 75vh */
                  lg:h-[calc(100vh+500px)]          /* Desktop: Full height + extra space */
                  lg:min-h-[900px]"                 /* Desktop: Minimum 900px */
     >
-      <div className="absolute inset-0 bg-[#f5f5f5] z-0"></div>
+      <div className="absolute inset-0  z-0"></div>
 
       {/* Video container - RESPONSIVE HEIGHT */}
       <div className="relative w-full z-10
@@ -108,7 +108,7 @@ function Video() {
         <img
           src="/assets/home/video-img-1.webp"
           alt="Floating left image"
-          className="w-full h-full object-cover rounded-[4px] shadow-2xl"
+          className="w-full h-full object-cover rounded-[4px] "
         />
       </div>
 
@@ -127,7 +127,7 @@ function Video() {
         <img
           src="/assets/home/video-img-2.webp"
           alt="Floating right image"
-          className="w-full h-full object-cover rounded-[4px] shadow-2xl"
+          className="w-full h-full object-cover rounded-[4px] "
         />
       </div>
     </div>
