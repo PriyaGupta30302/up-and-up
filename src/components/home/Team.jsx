@@ -22,7 +22,7 @@ export default function TeamSection() {
 
   useEffect(() => {
     const updateActive = () => {
-      const borderHeight = 120; // must match your border's h-[120px]
+      const borderHeight = 120;
       const borderTop = (window.innerHeight / 2) - (borderHeight / 2);
       const borderBottom = (window.innerHeight / 2) + (borderHeight / 2);
       const borderCenter = window.innerHeight / 2;
@@ -59,18 +59,48 @@ export default function TeamSection() {
   }, []);
 
   return (
-    <div className="relative w-full min-h-screen bg-[#23252C] pb-40 pt-20">
+    <div className="relative w-full min-h-screen bg-[#343434] pb-12 pt-8">
       {/* Section Heading, Top Image */}
-      <img src="/assets/home/brand/team/container-img.png" alt="" className="w-[400px] max-h-[400px] object-cover mx-auto " />
-      <h1 className="text-[36px] text-white text-center my-8 w-[1200px] tracking-wide mx-auto">
-        We bring together diverse marketing and communication capabilities from over <span className="text-[#F2623A]">500</span> team members across our Group of companies.
+      <img
+        src="/assets/home/brand/team/container-img.png"
+        alt=""
+        className="w-[400px] max-h-[400px] object-cover mx-auto 
+          md:w-[350px] md:max-h-[350px]
+          sm:w-[250px] sm:max-h-[250px]
+          xs:w-full xs:max-h-[150px]"
+      />
+      <h1 className="
+        text-[34px] xl:w-[1200px] w-full max-w-full px-4 my-8 text-white text-center tracking-wide mx-auto
+        lg:text-[30px] md:text-[24px]
+        sm:text-[18px] sm:w-full sm:my-6
+        xs:text-[14px] xs:my-3 xs:px-2
+      ">
+        We bring together diverse marketing and communication capabilities from over{" "}
+        <span className="text-[#F2623A]">500</span> team members across our Group of companies.
       </h1>
-      <div ref={sectionRef} className="flex flex-col items-center gap-12 relative z-20 mt-40">
+      <div
+        ref={sectionRef}
+        className="
+          flex flex-col items-center gap-[40px] relative z-20 mt-28 px-4
+          lg:gap-[80px] md:gap-[80px] md:mt-24
+          sm:gap-5 sm:mt-10 sm:px-2
+          xs:gap-2 xs:mt-6 xs:px-0
+        "
+      >
         {/* Fixed border, only if inside section */}
         {showBorder && (
-          <div className="pointer-events-none fixed left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 z-10 w-full px-24" style={{ height: 0 }}>
+          <div
+            className="
+              pointer-events-none fixed left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 z-10 w-full px-4
+              md:px-10 
+            "
+            style={{ height: 0 }}
+          >
             <div
-              className="w-full h-[120px] rounded-2xl border-t-1 border-b-1 border-transparent"
+              className="
+                w-full h-[85px] rounded-2xl border-t-1 border-b-1 border-transparent
+                md:h-[120px] 
+              "
               style={{
                 borderImage: "linear-gradient(90deg, #fd4d50 0%, #fff 50%, #fd4d50 100%) 1"
               }}
@@ -81,27 +111,33 @@ export default function TeamSection() {
         {teams.map((team, i) => (
           <div
             key={team.id}
-            ref={el => rowRefs.current[i] = el}
-            className="w-full mx-auto flex items-center justify-between px-12"
+            ref={(el) => (rowRefs.current[i] = el)}
+            className="
+              w-full mx-auto flex items-center justify-between px-0 lg:px-12 md:px-8 
+            "
             style={{ minHeight: 60, transition: "all 0.3s cubic-bezier(0.87,0,0.13,1)" }}
           >
-            <div className="w-12 h-12" />
+            <div className="w-0 h-0 md:w-8 md:h-8 sm:w-6 sm:h-6 " />
             <h1
-              ref={el => textRefs.current[i] = el}
-              className={`flex-1 text-center text-2xl font-semibold uppercase transition-all ${
-                i === active
+              ref={(el) => (textRefs.current[i] = el)}
+              className={`
+                flex-1 text-center uppercase transition-all
+                font-semibold
+                ${i === active
                   ? "bg-gradient-to-b from-[#efad99] to-[#e56f51] bg-clip-text text-transparent"
                   : "text-gray-200"
-              }`}
+                }
+                text-[34px] md:text-[48px] 
+                leading-tight
+              `}
               style={{
                 letterSpacing: "1.2px",
-                fontWeight: i === active ? 800 : 400,
-                fontSize: i === active ? "64px" : "64px"
+                fontWeight: i === active ? 600 : 400,
               }}
             >
               {team.name}
             </h1>
-            <div className="w-32 h-8"></div>
+            <div className="w-0 h-8 md:w-16 md:h-6 sm:w-10 sm:h-5 "></div>
           </div>
         ))}
       </div>
