@@ -68,7 +68,7 @@ function Brand() {
     ScrollTrigger.getAll().forEach(trigger => trigger.kill())
 
     ScrollTrigger.matchMedia({
-      "(min-width: 1024px)": function() {
+      "(min-width: 1024px)": function () {
         // Desktop scroll animation, hover active
         ScrollTrigger.create({
           trigger: container,
@@ -86,7 +86,7 @@ function Brand() {
           }
         })
       },
-      "(max-width: 1023px)": function() {
+      "(max-width: 1023px)": function () {
         // Mobile/Tablet: logo switches only when logo center closely matches brand row center
         ScrollTrigger.create({
           trigger: "#video-section",
@@ -100,7 +100,7 @@ function Brand() {
             const viewportHeight = window.innerHeight;
             const logoRectTop = viewportHeight * 0.35;      // logo box top
             const logoBoxHeight = 140;                      // must match your logo box style
-            const logoCenterY = logoRectTop + logoBoxHeight/2;
+            const logoCenterY = logoRectTop + logoBoxHeight / 2;
             let matchedIndex = -1;
             brandElements.forEach((el, i) => {
               const rect = el.getBoundingClientRect();
@@ -231,22 +231,20 @@ function Brand() {
               >
                 <div className="flex-1 pl-4">
                   <h1
-                    className={`font-light transition-all duration-300 ${
-                      hoveredBrand?.name === brand.name
+                    className={`font-light transition-all duration-300 ${hoveredBrand?.name === brand.name
                         ? 'text-black text-5xl font-medium py-5'
                         : 'text-[#343434] text-[22px]'
-                    }`}
+                      }`}
                   >
                     {brand.name}
                   </h1>
                 </div>
                 <div className="flex-1 text-left ml-[110px]">
                   <p
-                    className={`text-sm font-medium tracking-wider transition-all duration-300 ${
-                      hoveredBrand?.name === brand.name
+                    className={`text-sm font-medium tracking-wider transition-all duration-300 ${hoveredBrand?.name === brand.name
                         ? 'text-black text-[20px]'
                         : 'text-[#343434] text-[16px]'
-                    }`}
+                      }`}
                   >
                     {brand.description}
                   </p>

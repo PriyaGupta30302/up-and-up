@@ -16,7 +16,7 @@ function Video() {
       // Use GSAP matchMedia for responsive control
       ScrollTrigger.matchMedia({
         // Desktop only - 1024px and above (parallax effects enabled)
-        "(min-width: 1024px)": function() {
+        "(min-width: 1024px)": function () {
           // LEFT IMAGE - ULTRA HIGH SENSITIVITY (desktop only)
           ScrollTrigger.create({
             trigger: containerRef.current,
@@ -47,7 +47,7 @@ function Video() {
         },
 
         // Tablet and Mobile - 1023px and below (no parallax effects)
-        "(max-width: 1023px)": function() {
+        "(max-width: 1023px)": function () {
           // Reset any transforms for mobile/tablet
           gsap.set([leftImageRef.current, rightImageRef.current], {
             y: 0,

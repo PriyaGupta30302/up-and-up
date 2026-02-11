@@ -94,6 +94,7 @@ function Hero() {
         />
       </div>
 
+
       <div className="text-center px-4 pt-[200px] md:pt-[180px] lg:pt-[220px] w-full">
         {/* Static titles */}
         <div>
@@ -120,6 +121,7 @@ function Hero() {
                   EVERYTHING
                 </h1>
               </div>
+
 
               {/* Word 2: IMPACT */}
               <div className="h-[50px] md:h-[105px] lg:h-[120px] flex items-center justify-center">
